@@ -57,7 +57,6 @@ def register():
 def registers():
     with get_db() as conn:
         registers = conn.execute("SELECT * FROM registers").fetchall()
-        print(registers)
     return render_template("registers.html", registers=registers)
 
 # Initialize the database when the app starts
