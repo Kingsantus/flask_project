@@ -4,7 +4,6 @@
     <table>
         <thead>
             <tr>
-                <th>S/N</th>
                 <th>Name</th>
                 <th>Sport</th>
                 <th></th>
@@ -13,12 +12,11 @@
         <tbody>
             {% for register in registers %}
                 <tr>
-                    <td>{{ register.0 }}</td>
-                    <td>{{ register.1 }}</td>
-                    <td>{{ register.2 }}</td>
+                    <td>{{ registers.name }}</td>
+                    <td>{{ registers.sport }}</td>
                     <td>
                         <form action="/deregister" method="post">
-                            <input type="hidden" name="id" value="{{ register.0 }}">
+                            <input type="hidden" name="id" value="{{ register.id }}">
                             <input type="submit" value="Deregister">
                         </form>
                     </td>

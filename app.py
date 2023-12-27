@@ -1,39 +1,64 @@
-from flask import Flask, render_template, request
+import sqlite3
+from flask import Flask, render_template, request, redirect, g
 
 app = Flask(__name__)
+DATABASE = "flask_project.db"
 
-REGISTERS = {}
+def get_db():
+    db = getattr(g, "_database", None)
+    if db is None:
+        db = g._database = sqlite3.connect(DATABASE)
+    return db
 
-SPORTS = [
-    "Basketball",
-    "Soccer",
-    "Ultimate Frisbee"
-]
+def init_db():
+    with app.app_context():
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("""CREATE TABLE IF NOT EXISTS registers (
+                          id INTEGER PRIMARY KEY AUTOINCREMENT,
+                          name TEXT,
+                          sport TEXT
+                      )""")
+        db.commit()
 
-"""@app.route('/', methods=["GET", "POST"])
-def index():
-    if request.method == "GET":
-        return render_template('index1.html')
-    elif request.method == "POST":
-        return render_template("greet.html", name=request.form.get("name", "World"))"""
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, "_database", None)
+    if db is not None:
+        db.close()
 
 @app.route('/')
 def index():
-    return render_template("index.html", sports=SPORTS)
+    sports = ["Basketball", "Soccer", "Ultimate Frisbee"]
+    return render_template("index.html", sports=sports)
 
+@app.route('/deregister', methods=["POST"])
+def deregister():
+    with get_db() as conn:
+        id = request.form.get("id")
+        if id:
+            conn.execute("DELETE FROM registers WHERE id = ?", (id,))
+            conn.commit()
+    return redirect("/registers")
 
 @app.route("/register", methods=["POST"])
 def register():
-    name = request.form.get("name")
-    if not name:
-        return render_template('failure.html')
-    sport = request.form.get("sport")
-    if sport not in SPORTS:
-        return render_template('failure.html')
-    REGISTERS[name] = sport
-    return render_template("success.html")
-
+    with get_db() as conn:
+        name = request.form.get("name")
+        sport = request.form.get("sport")
+        if not name or sport not in ["Basketball", "Soccer", "Ultimate Frisbee"]:
+            return render_template('failure.html')
+        
+        conn.execute("INSERT INTO registers(name, sport) VALUES(?, ?)", (name, sport))
+        conn.commit()
+    return redirect('/registers')
 
 @app.route("/registers")
 def registers():
-    return render_template("registers.html", registers=REGISTERS)
+    with get_db() as conn:
+        registers = conn.execute("SELECT * FROM registers").fetchall()
+        print(registers)
+    return render_template("registers.html", registers=registers)
+
+# Initialize the database when the app starts
+init_db()
