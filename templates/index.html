@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Flask Tutorial</title>
-</head>
-<body>
-    <h1>Hello {{ name }}</h1>
-</body>
+  </head>
+  <body>
+    <form action="/greet" method="get">
+      <input type="text" autocomplete="off" placeholder="Name" autofocus name="name" />
+      <button type="submit">Greet</button>
+    </form>
+  </body>
 </html>
